@@ -18,6 +18,7 @@ public class UserService {
             userRepository.registerUser(newUser);
             return true;
         } else {
+            // Password is not as expected with rules
             return false;
         }
     }

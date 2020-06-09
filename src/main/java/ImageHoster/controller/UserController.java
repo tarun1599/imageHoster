@@ -43,9 +43,10 @@ public class UserController {
     public String registerUser(User user, Model model) {
 
         if(userService.registerUser(user)) {
-            // If register success redirect to login page
+            // Function returns true if user registration success, redirect to login page
             return "redirect:/users/login";
         } else {
+            // Function returns false if password strength is not as expected, redirect to same page with error message
             String error = "Password must contain atleast 1 alphabet, 1 number & 1 special character";
             model.addAttribute("User", user);
             model.addAttribute("passwordTypeError", error);
