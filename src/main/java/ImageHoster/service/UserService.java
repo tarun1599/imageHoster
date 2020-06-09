@@ -12,8 +12,31 @@ public class UserService {
     private UserRepository userRepository;
 
     //Call the registerUser() method in the UserRepository class to persist the user record in the database
-    public void registerUser(User newUser) {
-        userRepository.registerUser(newUser);
+    public boolean registerUser(User newUser) {
+        if (validatePasswordStrength(newUser.getPassword())){
+            // Register user to database only if password strength is accepted
+            userRepository.registerUser(newUser);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // Validate the Password Strength, return true if all criteria's are met else false
+    public boolean validatePasswordStrength(String password){
+        if(!password.matches("(?=.*[A-Z]).*") && !password.matches("(?=.*[a-z]).*")) {
+            // Password do not contains any alphabet
+            return false;
+        }else if (!password.matches("(?=.*[0-9]).*")){
+            // Password do not contains any number
+            return false;
+        } else if ( !password.matches("(?=.*[!@#$&*]).*")) {
+            // Password do not contains any special character
+            return false;
+        } else {
+            // Password contains atleast 1 alphabet, 1 number & 1 special character
+            return true;
+        }
     }
 
     //Since we did not have any user in the database, therefore the user with username 'upgrad' and password 'password' was hard-coded
