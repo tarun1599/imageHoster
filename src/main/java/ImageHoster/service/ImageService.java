@@ -1,5 +1,6 @@
 package ImageHoster.service;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.User;
 import ImageHoster.repository.ImageRepository;
@@ -24,16 +25,20 @@ public class ImageService {
         imageRepository.uploadImage(image);
     }
 
+    //The method calls the addComment() method in the Repository and passes the comment to be persisted in the database
+    public void addComment(Comment comment) {
+        imageRepository.addComment(comment);
+    }
 
-    //The method calls the getImageByTitle() method in the Repository and passes the title of the image to be fetched
+    //The method calls the getImageById() method in the Repository and passes the ID of the image to be fetched
     public Image getImageById(Integer imageId) {
         return imageRepository.getImageById(imageId);
     }
 
-    //The method calls the getImage() method in the Repository and passes the id of the image to be fetched
-    public Image getImage(Integer imageId) {
+    // Duplicate method, disabled
+    /*public Image getImage(Integer imageId) {
         return imageRepository.getImage(imageId);
-    }
+    } */
 
     //The method calls the updateImage() method in the Repository and passes the Image to be updated in the database
     public void updateImage(Image updatedImage) {

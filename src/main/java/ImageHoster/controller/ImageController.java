@@ -1,5 +1,6 @@
 package ImageHoster.controller;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
@@ -50,6 +51,27 @@ public class ImageController {
         Image image = imageService.getImageById(id);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments", image.getComments());
+        return "images/image";
+    }
+
+    //This method is called when user wants to submit new comment to an image
+    @RequestMapping(value = "/image/{imageId}/{imageTitle}/comments", method = RequestMethod.POST)
+    public String    addComment(@RequestParam("comment") String comment, @PathVariable("imageId") Integer imageId, Model model, HttpSession session) throws IOException {
+        Image image = imageService.getImageById(imageId);
+        Comment newComment = new Comment();
+        newComment.setText(comment);
+        newComment.setCreatedDate(new Date());
+        User user = (User) session.getAttribute("loggeduser");
+        newComment.setUser(user);
+        newComment.setImage(image);
+
+        imageService.addComment(newComment);
+
+        // Once new comment is add in db, refresh same page
+        model.addAttribute("image", image);
+        model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments", image.getComments());
         return "images/image";
     }
 
@@ -94,13 +116,14 @@ public class ImageController {
     @RequestMapping(value = "/editImage")
     public String editImage(@RequestParam("imageId") Integer imageId, Model model, HttpSession session) {
 
-        Image image = imageService.getImage(imageId);
+        Image image = imageService.getImageById(imageId);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments", image.getComments());
 
         // Added if condition to find editing user is owner of image
         User user = (User) session.getAttribute("loggeduser");
-        if(imageService.compareImageSessionUser(user,image.getUser())) {
+        if (imageService.compareImageSessionUser(user, image.getUser())) {
             return "images/edit";
         } else {
             // Dont update image is database and send user to image page with an error message
@@ -125,25 +148,25 @@ public class ImageController {
     @RequestMapping(value = "/editImage", method = RequestMethod.PUT)
     public String editImageSubmit(@RequestParam("file") MultipartFile file, @RequestParam("imageId") Integer imageId, @RequestParam("tags") String tags, Image updatedImage, HttpSession session) throws IOException {
 
-        Image image = imageService.getImage(imageId);
+        Image image = imageService.getImageById(imageId);
         User user = (User) session.getAttribute("loggeduser");
 
-            String updatedImageData = convertUploadedFileToBase64(file);
-            List<Tag> imageTags = findOrCreateTags(tags);
+        String updatedImageData = convertUploadedFileToBase64(file);
+        List<Tag> imageTags = findOrCreateTags(tags);
 
-            if (updatedImageData.isEmpty())
-                updatedImage.setImageFile(image.getImageFile());
-            else {
-                updatedImage.setImageFile(updatedImageData);
-            }
+        if (updatedImageData.isEmpty())
+            updatedImage.setImageFile(image.getImageFile());
+        else {
+            updatedImage.setImageFile(updatedImageData);
+        }
 
-            updatedImage.setId(imageId);
-            updatedImage.setUser(user);
-            updatedImage.setTags(imageTags);
-            updatedImage.setDate(new Date());
+        updatedImage.setId(imageId);
+        updatedImage.setUser(user);
+        updatedImage.setTags(imageTags);
+        updatedImage.setDate(new Date());
 
-            imageService.updateImage(updatedImage);
-            return "redirect:/images/" + updatedImage.getTitle();
+        imageService.updateImage(updatedImage);
+        return "redirect:/images/" + updatedImage.getTitle();
 
 
     }
@@ -156,8 +179,8 @@ public class ImageController {
     public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, Model model, HttpSession session) {
         // Added if condition to find editing user is owner of image
         User user = (User) session.getAttribute("loggeduser");
-        Image image = imageService.getImage(imageId);
-        if(imageService.compareImageSessionUser(user,image.getUser())) {
+        Image image = imageService.getImageById(imageId);
+        if (imageService.compareImageSessionUser(user, image.getUser())) {
             imageService.deleteImage(imageId);
             return "redirect:/images";
         } else {
@@ -166,6 +189,7 @@ public class ImageController {
             // dont delete image is database and send user an error message
             String error = "Only the owner of the image can delete the image";
             model.addAttribute("editError", error);
+            model.addAttribute("comments", image.getComments());
             return "images/image";
         }
     }
@@ -212,4 +236,6 @@ public class ImageController {
 
         return tagString.toString();
     }
+
+
 }
